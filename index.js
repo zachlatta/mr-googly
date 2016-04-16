@@ -6,15 +6,16 @@ let fs = require('fs');
 let url = require('url');
 let path = require('path');
 
-const RTM_EVENTS = slack.RTM_EVENTS;
-
+let SlackUploadClient = require('node-slack-upload');
 let RtmClient = slack.RtmClient;
 let WebClient = slack.WebClient;
 
+const RTM_EVENTS = slack.RTM_EVENTS;
 const SLACK_TOKEN = process.env.SLACK_API_TOKEN || '';
 
 let rtm = new RtmClient(SLACK_TOKEN, { logLevel: 'info' });
 let web = new WebClient(SLACK_TOKEN);
+let upload = new SlackUploadClient(SLACK_TOKEN);
 
 // Get our user id so we can ignore messages from us in the future.
 let botUserId = '';
@@ -50,9 +51,25 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg) => {
       let fileName = path.basename(parsedUrl.pathname);
       let f = fs.createWriteStream(fileName);
 
-      return resp.body.pipe(f);
+      return new Promise((resolve, reject) => {
+        resp.body.pipe(f);
+
+        resp.body.on('end', () => resolve(f));
+        f.on('error', err => reject(err));
+      });
     })
     .then(file => {
-      console.log(`File written to ${file.path}!`);
+      return new Promise((resolve, reject) => {
+        upload.uploadFile({
+          file: fs.createReadStream(file.path),
+          channels: msg.channel
+        }, err => {
+          if (err != undefined) {
+            return reject(err);
+          }
+
+          return resolve();
+        });
+      });
     });
 });
