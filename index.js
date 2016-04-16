@@ -5,6 +5,7 @@ let fetch = require('node-fetch');
 let fs = require('fs');
 let url = require('url');
 let path = require('path');
+let processImage = require('./stupidity.js');
 
 let SlackUploadClient = require('node-slack-upload');
 let RtmClient = slack.RtmClient;
@@ -32,10 +33,25 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg) => {
     return;
   }
 
+  // Ignore if the message doesn't have text attached to it
+  if (msg.text === undefined) {
+    return;
+  }
+
+  // Only reply if the user says some variation of "Mr. Googly"
+  if (!(msg.text.toLowerCase().indexOf("mr. googly") > -1) &&
+      !(msg.text.toLowerCase().indexOf("mr-googly") > -1) &&
+      !(msg.text.toLowerCase().indexOf("mr googly") > -1)) {
+    return;
+  }
+
+  console.log('received message');
+
   let userId = msg.user;
 
   web.users.info(userId)
     .then(resp => {
+      console.log('got user info');
       let profilePictureUrl = resp.user.profile.image_original;
 
       // user.profile.image_original isn't set for people using Gravatar. Use
@@ -47,6 +63,8 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg) => {
       return fetch(profilePictureUrl);
     })
     .then(resp => {
+      console.log('got profile picture');
+
       let parsedUrl = url.parse(resp.url);
       let fileName = path.basename(parsedUrl.pathname);
       let f = fs.createWriteStream(fileName);
@@ -59,9 +77,17 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg) => {
       });
     })
     .then(file => {
+      console.log('wrote file');
+
+      return new Promise((resolve, reject) => {
+        processImage(file.path, () => resolve(file.path));
+      });
+    })
+    .then(filePath => {
+      console.log('uploading');
       return new Promise((resolve, reject) => {
         upload.uploadFile({
-          file: fs.createReadStream(file.path),
+          file: fs.createReadStream(filePath),
           channels: msg.channel
         }, err => {
           if (err != undefined) {

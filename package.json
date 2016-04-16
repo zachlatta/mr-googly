@@ -15,7 +15,9 @@
   "dependencies": {
     "@slack/client": "^2.3.0",
     "fetch": "^1.0.1",
+    "gm": "^1.22.0",
     "node-fetch": "^1.5.1",
-    "node-slack-upload": "^1.1.0"
+    "node-slack-upload": "^1.1.0",
+    "opencv": "^5.0.0"
   }
 }
