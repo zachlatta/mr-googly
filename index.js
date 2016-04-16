@@ -1,6 +1,11 @@
 'use strict';
 
 let slack = require('@slack/client');
+let fetch = require('node-fetch');
+let fs = require('fs');
+let url = require('url');
+let path = require('path');
+
 const RTM_EVENTS = slack.RTM_EVENTS;
 
 let RtmClient = slack.RtmClient;
@@ -38,7 +43,16 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg) => {
         profilePictureUrl = resp.user.profile.image_512;
       }
 
-      rtm.sendMessage('Your profile picture is: ' + profilePictureUrl,
-                      msg.channel);
+      return fetch(profilePictureUrl);
+    })
+    .then(resp => {
+      let parsedUrl = url.parse(resp.url);
+      let fileName = path.basename(parsedUrl.pathname);
+      let f = fs.createWriteStream(fileName);
+
+      return resp.body.pipe(f);
+    })
+    .then(file => {
+      console.log(`File written to ${file.path}!`);
     });
 });

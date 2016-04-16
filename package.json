@@ -14,6 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "@slack/client": "^2.3.0",
-    "opencv": "^5.0.0"
+    "fetch": "^1.0.1",
+    "node-fetch": "^1.5.1"
   }
 }
