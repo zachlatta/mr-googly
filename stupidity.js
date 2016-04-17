@@ -14,25 +14,11 @@ function go(picture, callback) {
       throw new Error('Image has no size');
     }
 
-    detectStuff(im, "haarcascade_frontalface_alt.xml", function (parentCoors) {
-      detectStuff(im, "haarcascade_mcs_lefteye.xml", undefined, function (eye) {
-        let flag = false;
-        for (let k in parentCoors) {
-          let coordinates = parentCoors[k];
-          if (eye.x > coordinates.x-coordinates.width/2 &&
-              eye.y > coordinates.y-coordinates.height/2 &&
-              eye.x+eye.width < coordinates.x+coordinates.width/2 &&
-              eye.y+eye.height < coordinates.y+coordinates.height/2) {
-            flag = true;
-          }
-        }
-        return flag;
-      }, face, callback);
-    }, undefined, face);
+    detectStuff(im, "haarcascade_mcs_lefteye.xml", face, callback);
   });
 }
 
-function detectStuff(im, dataToUse, callback, check, face, finalCallback) {
+function detectStuff(im, dataToUse, face, callback) {
   im.detectObject(dataToUse, {}, function (err, found) {
     if (err) {
       throw err;
@@ -41,16 +27,9 @@ function detectStuff(im, dataToUse, callback, check, face, finalCallback) {
     let foundCoors = [];
     for (let i = 0; i < found.length; i++) {
       let aFound = found[i];
-      if (!check || check(aFound)) { // either no check or check was true
-        foundCoors.push(makeCoorsObj(aFound));
-      }
+      foundCoors.push(makeCoorsObj(aFound));
     }
-    if (callback) {
-      callback(foundCoors);
-    }
-    else {
-      drawEyesSon(foundCoors, face, finalCallback);
-    }
+    drawEyesSon(foundCoors, face, callback);
   });
 }
 
@@ -73,7 +52,7 @@ function makeCoorsObj(detected) {
    ,height: height of eye
   }
 */
-function drawEyesSon(coordinates, face, finalCallback) {
+function drawEyesSon(coordinates, face, callback) {
   for (let x in coordinates) {
     let eye = coordinates[x];
     face.fill("#ffffff")
@@ -83,7 +62,7 @@ function drawEyesSon(coordinates, face, finalCallback) {
   }
   face.write(face.source, function (err) {
     if (!err) {
-      finalCallback();
+      callback();
     }
   });
 }
