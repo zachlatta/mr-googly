@@ -94,6 +94,19 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg) => {
             return reject(err);
           }
 
+          return resolve(filePath);
+        });
+      });
+    })
+    .then(filePath => {
+      console.log('deleting file');
+
+      return new Promise((resolve, reject) => {
+        fs.unlink(filePath, err => {
+          if (err) {
+            return reject(err);
+          }
+
           return resolve();
         });
       });
