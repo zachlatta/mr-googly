@@ -88,6 +88,7 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg) => {
       return new Promise((resolve, reject) => {
         upload.uploadFile({
           file: fs.createReadStream(filePath),
+          title: 'oh hi!',
           channels: msg.channel
         }, err => {
           if (err != undefined) {
