@@ -1,7 +1,9 @@
 # Meet Mr. Googly
 
 Mr. Googly is a friendly Slack bot that _loves_ googly eyes (maybe a little too
-much).
+much). Say hi to him on the [Hack Club Slack](https://slack.hackclub.com) in the
+[`#random`](https://starthackclub.slack.com/messages/random/) channel, he loves
+meeting new friends!
 
 _Built during Hack Night: Stupid Edition._
 
